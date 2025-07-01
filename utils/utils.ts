@@ -118,8 +118,9 @@ export async function establishEnoughSol(
  * @private
  */
 async function getConfig(): Promise<any> {
+  
   // Path to Solana CLI config file
-  const CONFIG_FILE_PATH = path.resolve(
+  const CONFIG_FILE_PATH = process.env.CONFIG_FILE_PATH || path.resolve(
     os.homedir(),
     ".config",
     "solana",
