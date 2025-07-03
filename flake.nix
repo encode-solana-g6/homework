@@ -55,7 +55,7 @@
         #               args ${concatStringsSep " " (map (arg: '' "${arg}" '') args)}
         #           ''}
         #         }'';
-        mkDev = progName:
+        mkDev = buildrun_cmd:
           let
             zellijConfig = pkgs.writeText "config.kdl" ''
               show_startup_tips false
@@ -80,7 +80,7 @@
                 }
                 tab name="foreground" {
                   pane split_direction="vertical" {
-                    ${cmdPane {cmd = "buildrun ${progName}"; }}
+                    ${cmdPane {cmd = buildrun_cmd; }}
                     ${cmdPane {cmd = "logs"; }}
                     pane
                   }
@@ -188,11 +188,13 @@
           '';
 
 
-          hw = mkDev "helloworld";
-          ct = mkDev "counter";
-          cp = mkDev "cpi";
-          co = mkDev "compute";
-          pd = mkDev "pda";
+          hw = mkDev "buildrunhelloworld";
+          ct = mkDev "buildrun counter";
+          cpi = mkDev ''build helloworld; deploy helloworld;
+            buildrun cpi
+          '';
+          compute = mkDev "buildrun compute";
+          pda = mkDev "buildrun pda";
 
           # dev1 =
           #   let
