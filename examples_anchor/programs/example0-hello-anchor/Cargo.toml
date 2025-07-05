@@ -1,12 +1,12 @@
 [package]
-name = "hello-world"
+name = "hello-anchor"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "hello_world"
+name = "hello_anchor"
 
 [features]
 default = []

@@ -204,13 +204,14 @@
           rps = mkDev "buildrun rps";
           consortium = mkDev "buildrun consortium";
           hw2 = ''set -x; setenv devnet; airdrop;
-            export PKG="hello-world"; ${exports}; 
+            export PKG="hello-anchor"; ${exports}; 
             cd $PROG_DIR; echo "Building $PKG program";
             if [ ! -d "node_modules" ]; then yarn install; fi
             # anchor keys list;
             anchor build --no-idl --program-name "$PKG" -- --no-rustup-override --skip-tools-install 
             mkdir -p "${env.CACHE_DIR}/$PKG"
-            ANCHOR_LOG=true anchor idl build --program-name "$PKG" --out ${env.CACHE_DIR}/hello-world/idl.json --out-ts ${env.CACHE_DIR}/hello-world/idl-ts.ts
+            # --out ${env.CACHE_DIR}/hello-world/idl.json --out-ts ${env.CACHE_DIR}/hello-world/idl-ts.ts
+            ANCHOR_LOG=true anchor idl build --program-name "$PKG" 
             anchor deploy --program-name "$PKG" --provider.cluster devnet --provider.wallet "${env.PAYER}"
             anchor test --program-name "$PKG" --skip-deploy --provider.wallet "${env.PAYER}" --provider.cluster devnet
           '';

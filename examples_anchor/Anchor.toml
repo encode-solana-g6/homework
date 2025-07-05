@@ -1,28 +1,25 @@
+[toolchain]
+
 [features]
-seeds = false
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+example1 = "EnNAUhQEdDNtNszfguvK5RSkSLDStPLtUqeLpbjayoNq"
+example2 = "5521eQoUE17iVGZXCwwGApaF6qExq2hkYVviETpfaXQE"
+example3 = "BG8eNGD8vvPpegz6NojiFS2n6yPHV5yt9LJngp1QCkFf"
+hello_world = "JC5cEVfD2Zz2DM8M8urFgASnRVxkmR6qH6heHhtaDL1X"
+onchain-voting = "46NNnymqhjHDyjiyyoMEKutTmZs9c1E5Yv53wSLV8ZFT"
+
+[registry]
+url = "https://api.apr.dev"
 
 [provider]
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"
-
-## /target is excluded from being pushed so upon cloning and 
-## running anchor build and then anchor deploy
-## newly created program addresses have to be pasted below
-## as well as into respective programs and then need to run 
-## anchor build and then anchor deploy
-## AGAIN
-
-[programs.localnet]
-example1 = "EnNAUhQEdDNtNszfguvK5RSkSLDStPLtUqeLpbjayoNq" 
-example2 = "5521eQoUE17iVGZXCwwGApaF6qExq2hkYVviETpfaXQE"
-example3 = "BG8eNGD8vvPpegz6NojiFS2n6yPHV5yt9LJngp1QCkFf"
-hello_world = "JC5cEVfD2Zz2DM8M8urFgASnRVxkmR6qH6heHhtaDL1X"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 test1 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example1_lottery.ts"
 test2 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example2_rps.ts"
 test3 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example3_consortium.ts"
-
-
-
