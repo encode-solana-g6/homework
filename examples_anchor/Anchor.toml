@@ -16,10 +16,13 @@ wallet = "~/.config/solana/id.json"
 example1 = "EnNAUhQEdDNtNszfguvK5RSkSLDStPLtUqeLpbjayoNq" 
 example2 = "5521eQoUE17iVGZXCwwGApaF6qExq2hkYVviETpfaXQE"
 example3 = "BG8eNGD8vvPpegz6NojiFS2n6yPHV5yt9LJngp1QCkFf"
+hello_world = "JC5cEVfD2Zz2DM8M8urFgASnRVxkmR6qH6heHhtaDL1X"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 test1 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example1_lottery.ts"
 test2 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example2_rps.ts"
 test3 = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/test_example3_consortium.ts"
+
+
 

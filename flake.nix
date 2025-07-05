@@ -23,6 +23,7 @@
           WD = getEnv "PWD";
           PAYER = "${env.WD}/.cache/keys/id.json";
           CONFIG_PATH = "${env.WD}/.cache/config.yml";
+          CACHE_DIR = "${env.WD}/.cache";
           TOKEN_ADDR = "D6RTpDQRggiZ5sr75oG3TzNH13L8E19p1BJoGdMe8GgF"; # Decimals: 9
           MY_TOKEN_ACCOUNT = "GTFLxPQWDraeXrRetyZbVwkUx9TLWDRR2wsrWUz4Ho9x";
           NFT_ID = "FSALK4zSNyuSFuRRZSjZ6rJx7pqa9ysFqoq98xpS4BHY";
@@ -94,7 +95,7 @@
           '' zellij --config ${zellijConfig} --new-session-with-layout ${layout} '';
 
         wd = "$(git rev-parse --show-toplevel)";
-        scripts = mapAttrs (name: txt: pkgs.writeScriptBin name txt) {
+        scripts = mapAttrs (name: txt: pkgs.writeScriptBin name txt) rec {
           # bare = ''cd ${wd}/examples_baremetal; npm i; npm run build'';
           localnet = ''solana-test-validator --reset'';
           # await_net = ''until sol ping -c 1 | grep -q "✅"; do sleep 1; echo "Waitiing for validator..."; done && echo "Validator is ready"'';
@@ -125,23 +126,27 @@
           setlocal = ''set -x; if [[ "$(net)" != *"local"* ]]; then setenv localhost; fi'';
 
           # FOR ALL PROGRAMS
-          build = ''set -x; 
-            export PKG="''${1-''${PKG}}"; echo $PKG;
-            cargo-build-sbf --manifest-path=${wd}/examples_baremetal/Cargo.toml --no-rustup-override --skip-tools-install -- --package "$PKG" 
+          prog_dir = ''find ${wd}/examples_baremetal ${wd}/examples_anchor -maxdepth 2 -type d -name "*$1*" '';
+          exports = ''set -x; export PKG="''${1-''${PKG}}"; export PROG_DIR="$(prog_dir $PKG)"; echo "PKG=$PKG" "PROG_DIR=$PROG_DIR" '';
+          build = ''set -x; ${exports};
+            if [[ "$PROG_DIR" == *baremetal* ]]; 
+              then cargo-build-sbf --manifest-path=${wd}/examples_baremetal/Cargo.toml --no-rustup-override --skip-tools-install -- --package "$PKG" 
+            fi
+            if [[ "$PROG_DIR" == *anchor* ]]; 
+              then cd "$PROG_DIR"; yarn install; anchor build
+            fi
           '';
-          deploy = ''set -x; airdrop; mk_prog_keys; await_net;
-            export PKG="''${1-''${PKG}}"; echo $PKG;
+          deploy = ''set -x; ${exports}; airdrop; mk_prog_keys; await_net;
             sol program-v4 deploy --program-keypair "$(progKeysOf $PKG)" "${env.PROGRAMS_PATH}/$PKG.so"; 
           '';
-          show = ''set -x; PKG="''${1-''${PKG}}"
+          show = ''set -x; ${exports};
             sol program-v4 show "$(addrOfKeys "$(progKeysOf $PKG)")"
           '';
-          call = ''set -x; PKG="''${1-''${PKG}}"
+          call = ''set -x; ${exports};
             cd "${wd}"; npm i
-            PROG_DIR="$(find ${wd}/examples_baremetal -maxdepth 2 -type d -name "*$PKG*" )"
             ts-node "$PROG_DIR/client/main.ts"
           '';
-          buildrun = ''set -x; export PKG="''${1-''${PKG}}"
+          buildrun = ''set -x; export ${exports};
             build $PKG; deploy $PKG; call $PKG;
           '';
 
@@ -159,7 +164,7 @@
           addrOfKeys = ''solana address --keypair "$1" '';
           myAddr = ''solana address --keypair "${env.PAYER}"'';
           myBal = ''set -x; sol balance --lamports --no-address-labels | awk '{print $1}' '';
-          airdrop = ''set -x; mkKeys; await_net; if [ "$(${bin.myBal})" -lt 2000000 ]; then mkKeys; sol airdrop 2; fi'';
+          airdrop = ''set -x; mkKeys; await_net; if [ "$(${bin.myBal})" -lt 5000000000 ]; then mkKeys; sol airdrop 5; fi'';
 
           new-token = ''set -x; setenv devnet; mkKeys; airdrop;
             TOKEN_ID=''${TOKEN_ADDR-"$(${bin.token} create-token --config "${env.CONFIG_PATH}")"}
@@ -188,13 +193,27 @@
           '';
 
 
-          hw = mkDev "buildrunhelloworld";
+          hw = mkDev "buildrun helloworld";
           ct = mkDev "buildrun counter";
           cpi = mkDev ''build helloworld; deploy helloworld;
             buildrun cpi
           '';
           compute = mkDev "buildrun compute";
           pda = mkDev "buildrun pda";
+          lottery = mkDev "build lottery";
+          rps = mkDev "buildrun rps";
+          consortium = mkDev "buildrun consortium";
+          hw2 = ''set -x; setenv devnet; airdrop;
+            export PKG="hello-world"; ${exports}; 
+            cd $PROG_DIR; echo "Building $PKG program";
+            if [ ! -d "node_modules" ]; then yarn install; fi
+            # anchor keys list;
+            anchor build --no-idl --program-name "$PKG" -- --no-rustup-override --skip-tools-install 
+            mkdir -p "${env.CACHE_DIR}/$PKG"
+            ANCHOR_LOG=true anchor idl build --program-name "$PKG" --out ${env.CACHE_DIR}/hello-world/idl.json --out-ts ${env.CACHE_DIR}/hello-world/idl-ts.ts
+            anchor deploy --program-name "$PKG" --provider.cluster devnet --provider.wallet "${env.PAYER}"
+            anchor test --program-name "$PKG" --skip-deploy --provider.wallet "${env.PAYER}" --provider.cluster devnet
+          '';
 
           # dev1 =
           #   let
